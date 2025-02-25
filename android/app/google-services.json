@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "425945874087",
+    "project_id": "homeassist-7a84f",
+    "storage_bucket": "homeassist-7a84f.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:425945874087:android:45e6010e339572d90ae582",
+        "android_client_info": {
+          "package_name": "com.example.on_demant_home_service_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCdUKrIBTccbg2DrZDOV9djqOZvf9hlE0I"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

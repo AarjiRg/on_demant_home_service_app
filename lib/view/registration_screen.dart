@@ -1,7 +1,7 @@
-import 'package:echotrip_planner/controller/location_controller.dart';
-import 'package:echotrip_planner/controller/registration_controller.dart';
-import 'package:echotrip_planner/view/login_screen/login_screen.dart';
+
 import 'package:flutter/material.dart';
+import 'package:on_demant_home_service_app/controller/location_controller.dart';
+import 'package:on_demant_home_service_app/controller/registartion_controller.dart';
 import 'package:provider/provider.dart';
 
 class RegistrationScreen extends StatefulWidget {
@@ -10,8 +10,9 @@ class RegistrationScreen extends StatefulWidget {
 }
 
 class _RegistrationScreenState extends State<RegistrationScreen> {
-   bool _isLocationListVisible = false;
+  bool _isLocationListVisible = false;
   final _formKey = GlobalKey<FormState>();
+  
 
   final TextEditingController firstNameController = TextEditingController();
   final TextEditingController lastNameController = TextEditingController();
@@ -19,19 +20,19 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController confirmPasswordController = TextEditingController();
-  final TextEditingController locationController = TextEditingController();
+  final TextEditingController _locationController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    locationController.addListener(() {
-      context.read<LocationController>().onLocationSearch(locationController.text);
+    _locationController.addListener(() {
+      context.read<LocationController>().onLocationSearch(_locationController.text);
     });
   }
 
   @override
   void dispose() {
-    locationController.dispose();
+    _locationController.dispose();
     super.dispose();
   }
 
@@ -57,7 +58,6 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                   SizedBox(height: 10),
                   Text("Please fill in the details to continue", style: TextStyle(color: Colors.blue[700])),
                   SizedBox(height: 30),
-
                   TextFormField(
                     style: TextStyle(color: Colors.blue[900]),
                     controller: firstNameController,
@@ -65,7 +65,6 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                     validator: (value) => value!.isEmpty ? "First name is required" : null,
                   ),
                   SizedBox(height: 15),
-
                   TextFormField(
                     style: TextStyle(color: Colors.blue[900]),
                     controller: lastNameController,
@@ -73,7 +72,6 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                     validator: (value) => value!.isEmpty ? "Last name is required" : null,
                   ),
                   SizedBox(height: 15),
-
                   TextFormField(
                     style: TextStyle(color: Colors.blue[900]),
                     controller: phoneController,
@@ -86,7 +84,6 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                     },
                   ),
                   SizedBox(height: 15),
-
                   TextFormField(
                     style: TextStyle(color: Colors.blue[900]),
                     controller: emailController,
@@ -101,52 +98,50 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                     },
                   ),
                   SizedBox(height: 15),
-
-                  TextFormField(
-                    onTapOutside:(event) {
-                      FocusScope.of(context).unfocus();
-                    },
-                    controller: locationController,
-                    decoration: InputDecoration(
-                      suffixIcon: InkWell(
-                        onTap: () {
-                          context.read<LocationController>().onLocationSearch(locationController.text);
-                        },
-                        child: Icon(Icons.search),
+                   TextFormField(
+                onTapOutside:(event) {
+                    FocusScope.of(context).unfocus();
+                },
+          controller: _locationController,
+          decoration: InputDecoration(
+            suffixIcon: InkWell(
+              onTap: () {
+                context.read<LocationController>().onStartLocationSearch(_locationController.text);
+              },
+              child: Icon(Icons.search),
+            ),
+            labelText: "Please select location",
+            prefixIcon: Icon(Icons.location_on),
+          ),
+          validator: (value) => value!.isEmpty ? "Please enter a location" : null,
+        ),
+        if (locationProvider.startLocationsList.isNotEmpty)
+          Container(
+            height: 200,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(8),
+              boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 4)],
+            ),
+            child: locationProvider.isStartLoading
+                ? Center(child: CircularProgressIndicator())
+                : ListView.separated(
+                    itemBuilder: (context, index) => InkWell(
+                      onTap: () {
+                        String selectedLocation = locationProvider.startLocationsList[index].formattedAddress.toString();
+                        _locationController.text = selectedLocation;
+                        locationProvider.clearStartLocations();
+                        setState(() {}); 
+                      },
+                      child: ListTile(
+                        title: Text(locationProvider.startLocationsList[index].formattedAddress.toString()),
                       ),
-                      labelText: "Please select location",
-                      prefixIcon: Icon(Icons.location_on),
                     ),
-                    validator: (value) => value!.isEmpty ? "Please enter a location" : null,
+                    separatorBuilder: (context, index) => Divider(),
+                    itemCount: locationProvider.startLocationsList.length,
                   ),
-                  if (locationProvider.locationslist.isNotEmpty)
-                    Container(
-                      height: 200,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(8),
-                        boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 4)],
-                      ),
-                      child: locationProvider.isloading
-                          ? Center(child: CircularProgressIndicator())
-                          : ListView.separated(
-                              itemBuilder: (context, index) => InkWell(
-                                onTap: () {
-                                  String selectedLocation = locationProvider.locationslist[index].formattedAddress.toString();
-                                  locationController.text = selectedLocation;
-                                  locationProvider.clearLocationsList();
-                                  setState(() {});
-                                },
-                                child: ListTile(
-                                  title: Text(locationProvider.locationslist[index].formattedAddress.toString()),
-                                ),
-                              ),
-                              separatorBuilder: (context, index) => Divider(),
-                              itemCount: locationProvider.locationslist.length,
-                            ),
-                    ),
+          ),
                   SizedBox(height: 10),
-
                   TextFormField(
                     style: TextStyle(color: Colors.blue[900]),
                     controller: passwordController,
@@ -159,7 +154,6 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                     },
                   ),
                   SizedBox(height: 15),
-
                   TextFormField(
                     style: TextStyle(color: Colors.blue[900]),
                     controller: confirmPasswordController,
@@ -172,7 +166,6 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                     },
                   ),
                   SizedBox(height: 20),
-
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
@@ -182,17 +175,13 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                         padding: EdgeInsets.symmetric(vertical: 15),
                       ),
                       onPressed: () {
-                        if (_formKey.currentState!.validate()) {
-                          context.read<RegistrationController>().onRegistration(
-                            emailAddress: emailController.text,
-                            password: passwordController.text,
-                            name: firstNameController.text,
-                            phone: phoneController.text,
-                            location: locationController.text,
-                            context: context,
-                            fullName: lastNameController.text,
-                          );
-                        }
+                         context.read<RegistrationController>().onRegistration(
+                        emailAddress: emailController.text,
+                         password: passwordController.text,
+                          name: firstNameController.text,
+                           phone: phoneController.text,
+                            location: _locationController.text,
+                             context: context, fullName: lastNameController.text);
                       },
                       child: Text("SIGN UP", style: TextStyle(fontSize: 18, color: Colors.white)),
                     ),
@@ -202,6 +191,19 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  InputDecoration inputDecoration(String label) {
+    return InputDecoration(
+      labelText: label,
+      labelStyle: TextStyle(color: Colors.blue[700]),
+      filled: true,
+      fillColor: Colors.blue[100],
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
+        borderSide: BorderSide.none,
       ),
     );
   }

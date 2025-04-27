@@ -1,16 +1,17 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:on_demant_home_service_app/controller/login_controller.dart';
-import 'package:on_demant_home_service_app/view/registration_screen.dart';
+import 'package:on_demant_home_service_app/controller/workerlogin_controler.dart';
+import 'package:on_demant_home_service_app/view/workerregscreen.dart';
 import 'package:provider/provider.dart';
 
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+class WorkerLoginScreen extends StatefulWidget {
+  const WorkerLoginScreen({super.key});
 
   @override
-  _LoginScreenState createState() => _LoginScreenState();
+  _WorkerLoginScreenState createState() => _WorkerLoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _WorkerLoginScreenState extends State<WorkerLoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
@@ -26,8 +27,8 @@ class _LoginScreenState extends State<LoginScreen> {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
+              Color(0xFF2575FC), 
               Color(0xFF6A11CB),
-              Color(0xFF2575FC),
             ],
           ),
         ),
@@ -40,6 +41,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20),
                 ),
+                color: Colors.deepPurple[800], 
                 child: Padding(
                   padding: const EdgeInsets.all(24.0),
                   child: Form(
@@ -47,44 +49,44 @@ class _LoginScreenState extends State<LoginScreen> {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-               
+                 
                         Container(
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.1),
+                            color: Colors.black.withOpacity(0.2),
                             shape: BoxShape.circle,
                           ),
                           child: const Icon(
-                            Icons.person,
+                            Icons.work,
                             size: 40,
                             color: Colors.white,
                           ),
                         ),
                         const SizedBox(height: 20),
                         
-                   
+        
                         const Text(
-                          "Welcome Back",
+                          "Worker Login",
                           style: TextStyle(
                             fontSize: 28,
                             fontWeight: FontWeight.bold,
-                            color: Colors.black,
+                            color: Colors.white,
                           ),
                         ),
                         const SizedBox(height: 8),
                         const Text(
-                          "Please sign in to continue",
+                          "Sign in to access your worker dashboard",
                           style: TextStyle(
-                            color: Colors.black87, 
+                            color: Colors.white70,
                           ),
                         ),
                         const SizedBox(height: 30),
                         
-                      
+                
                         TextFormField(
                           controller: emailController,
                           keyboardType: TextInputType.emailAddress,
-                          style: const TextStyle(color: Colors.black),
+                          style: const TextStyle(color: Colors.white),
                           decoration: _inputDecoration("Email", Icons.email),
                           validator: (value) {
                             if (value!.isEmpty) return "Email is required";
@@ -96,11 +98,11 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         const SizedBox(height: 20),
                         
-                      
+            
                         TextFormField(
                           controller: passwordController,
                           obscureText: true,
-                          style: const TextStyle(color: Colors.black),
+                          style: const TextStyle(color: Colors.white),
                           decoration: _inputDecoration("Password", Icons.lock),
                           validator: (value) {
                             if (value!.isEmpty) return "Password is required";
@@ -110,7 +112,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         const SizedBox(height: 15),
                         
-                       
+        
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
@@ -118,7 +120,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               children: [
                                 Theme(
                                   data: Theme.of(context).copyWith(
-                                    unselectedWidgetColor: Colors.black54, 
+                                    unselectedWidgetColor: Colors.white70,
                                   ),
                                   child: Checkbox(
                                     value: rememberMe,
@@ -128,33 +130,36 @@ class _LoginScreenState extends State<LoginScreen> {
                                       });
                                     },
                                     checkColor: Colors.deepPurple,
-                                    activeColor: Colors.black,
+                                    activeColor: Colors.white,
                                   ),
                                 ),
                                 const Text(
                                   "Remember me",
-                                  style: TextStyle(color: Colors.black87),
+                                  style: TextStyle(color: Colors.white70),
                                 ),
                               ],
                             ),
                             TextButton(
-                              onPressed: () {},
+                              onPressed: () {
+                          
+                                _showForgotPasswordDialog(context);
+                              },
                               child: const Text(
                                 "Forgot Password?",
-                                style: TextStyle(color: Colors.blue), 
+                                style: TextStyle(color: Colors.lightBlueAccent),
                               ),
                             ),
                           ],
                         ),
                         const SizedBox(height: 25),
                         
-                  
+                
                         SizedBox(
                           width: double.infinity,
                           child: ElevatedButton(
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.deepPurple, 
-                              foregroundColor: Colors.white, 
+                              backgroundColor: Colors.white,
+                              foregroundColor: Colors.deepPurple,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(30),
                               ),
@@ -163,26 +168,13 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                             onPressed: _isLoading
                                 ? null
-                                : () {
-                                    if (_formKey.currentState!.validate()) {
-                                      setState(() => _isLoading = true);
-                                      context.read<LoginScreenController>().onLogin(
-                                        email: emailController.text,
-                                        password: passwordController.text,
-                                        context: context,
-                                      ).then((_) {
-                                        if (mounted) {
-                                          setState(() => _isLoading = false);
-                                        }
-                                      });
-                                    }
-                                  },
+                                : () => _handleLogin(context),
                             child: _isLoading
                                 ? const CircularProgressIndicator(
-                                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                    valueColor: AlwaysStoppedAnimation<Color>(Colors.deepPurple),
                                   )
                                 : const Text(
-                                    "SIGN IN",
+                                    "SIGN IN AS WORKER",
                                     style: TextStyle(
                                       fontSize: 18,
                                       fontWeight: FontWeight.bold,
@@ -192,13 +184,13 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         const SizedBox(height: 20),
                         
-               
+                
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             const Text(
-                              "Don't have an account?",
-                              style: TextStyle(color: Colors.black87), 
+                              "Not a worker yet?",
+                              style: TextStyle(color: Colors.white70),
                             ),
                             TextButton(
                               onPressed: () {
@@ -206,7 +198,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   context,
                                   PageRouteBuilder(
                                     transitionDuration: const Duration(milliseconds: 500),
-                                    pageBuilder: (_, __, ___) =>  RegistrationScreen(),
+                                    pageBuilder: (_, __, ___) =>  WorkerRegistrationScreen(),
                                     transitionsBuilder: (_, animation, __, child) {
                                       return FadeTransition(
                                         opacity: animation,
@@ -217,9 +209,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                 );
                               },
                               child: const Text(
-                                "Sign Up",
+                                "Register as Worker",
                                 style: TextStyle(
-                                  color: Colors.blue, 
+                                  color: Colors.lightBlueAccent,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
@@ -238,13 +230,74 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
+  Future<void> _handleLogin(BuildContext context) async {
+    if (_formKey.currentState!.validate()) {
+      setState(() => _isLoading = true);
+      
+      try {
+        await context.read<WorkerLoginScreenController>().onWorkerLogin(
+          email: emailController.text,
+          password: passwordController.text,
+          context: context,
+        );
+      } catch (e) {
+ 
+      } finally {
+        if (mounted) {
+          setState(() => _isLoading = false);
+        }
+      }
+    }
+  }
+
+  Future<void> _showForgotPasswordDialog(BuildContext context) async {
+    final emailController = TextEditingController();
+    return showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Reset Password'),
+          content: TextFormField(
+            controller: emailController,
+            decoration: const InputDecoration(labelText: 'Enter your email'),
+            keyboardType: TextInputType.emailAddress,
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () async {
+                try {
+                  await FirebaseAuth.instance.sendPasswordResetEmail(
+                    email: emailController.text.trim(),
+                  );
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Password reset email sent')),
+                  );
+                  Navigator.pop(context);
+                } catch (e) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Error: ${e.toString()}')),
+                  );
+                }
+              },
+              child: const Text('Send'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   InputDecoration _inputDecoration(String label, IconData icon) {
     return InputDecoration(
       labelText: label,
-      labelStyle: const TextStyle(color: Colors.black54), // Changed to black54
-      prefixIcon: Icon(icon, color: Colors.black54), // Changed to black54
+      labelStyle: const TextStyle(color: Colors.white70),
+      prefixIcon: Icon(icon, color: Colors.white70),
       filled: true,
-      fillColor: Colors.grey[200], // Changed to light grey for better contrast
+      fillColor: Colors.black.withOpacity(0.2),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(15),
         borderSide: BorderSide.none,
@@ -255,16 +308,16 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(15),
-        borderSide: const BorderSide(color: Colors.deepPurple, width: 1.5), // Changed to deepPurple
+        borderSide: const BorderSide(color: Colors.white, width: 1.5),
       ),
-      errorStyle: const TextStyle(color: Colors.red), // Kept red for errors
+      errorStyle: const TextStyle(color: Colors.orangeAccent),
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(15),
-        borderSide: const BorderSide(color: Colors.red),
+        borderSide: const BorderSide(color: Colors.orangeAccent),
       ),
       focusedErrorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(15),
-        borderSide: const BorderSide(color: Colors.red),
+        borderSide: const BorderSide(color: Colors.orangeAccent),
       ),
     );
   }
